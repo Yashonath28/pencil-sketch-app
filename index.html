@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image to Pencil Sketch</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1><center>Convert Image to Pencil Sketch</center></h1>
+        
+        <!-- Image Upload Form -->
+        <form id="uploadForm" enctype="multipart/form-data">
+            <input type="file" id="imageFile" name="imageFile" accept="image/*" required>
+            <label for="shadow">Pencil Shadow Intensity:</label>
+            <input type="range" id="shadow" name="shadow" min="0" max="50" value="10">
+            <button type="submit">Convert</button>
+        </form>
+
+        <!-- Output Sketch Image -->
+        <div class="output">
+            <h2>Sketch Result:</h2>
+            <img id="sketchImage" src="" alt="Your Sketch will appear here" />
+        </div>
+
+        <!-- Download Button -->
+        <button id="downloadBtn" style="display: none;">Download Sketch</button>
+    </div>
+
+    <script>
+        document.getElementById('uploadForm').onsubmit = async function(event) {
+            event.preventDefault();
+
+            const formData = new FormData();
+            const fileField = document.querySelector('input[type="file"]');
+            const shadowIntensity = document.getElementById('shadow').value;
+
+            formData.append('imageFile', fileField.files[0]);
+            formData.append('shadow', shadowIntensity);  // Add shadow intensity
+
+            const response = await fetch('/upload', {
+                method: 'POST',
+                body: formData
+            });
+
+            const result = await response.json();
+            const sketchImage = document.getElementById('sketchImage');
+            sketchImage.src = 'data:image/jpeg;base64,' + result.image;
+
+            // Show download button and set the image for download
+            const downloadBtn = document.getElementById('downloadBtn');
+            downloadBtn.style.display = 'block';
+            downloadBtn.onclick = function() {
+                const link = document.createElement('a');
+                link.href = sketchImage.src;
+                link.download = 'pencil_sketch.jpg';
+                link.click();
+            };
+        };
+    </script>
+</body>
+</html>
